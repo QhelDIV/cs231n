@@ -139,7 +139,7 @@ class FullyConnectedNet(object):
 
     def __init__(self, hidden_dims, input_dim=3*32*32, num_classes=10,
                  dropout=1, normalization=None, reg=0.0,
-                 weight_scale=1e-2, dtype=np.float32, seed=None):
+                 weight_scale=1e-2, dtype=np.float32, seed=None, use_batchnorm=False, use_dropout=False):
         """
         Initialize a new FullyConnectedNet.
 
@@ -167,6 +167,7 @@ class FullyConnectedNet(object):
         self.num_layers = 1 + len(hidden_dims)
         self.dtype = dtype
         self.params = {}
+        self.use_batchnorm = False
 
         ############################################################################
         # TODO: Initialize the parameters of the network, storing all values in    #
@@ -180,7 +181,17 @@ class FullyConnectedNet(object):
         # beta2, etc. Scale parameters should be initialized to ones and shift     #
         # parameters should be initialized to zeros.                               #
         ############################################################################
-        pass
+        prev_layer_dim = input_dim
+        for i, next_layer_dim in enumerate(hidden_dims):
+            self.params['W%d'%(i+1)] = weight_scale * np.random.randn(prev_layer_dim, next_layer_dim)
+            self.params['b%d'%(i+1)] = weight_scale * np.zeros(next_layer_dim)
+            if self.use_batchnorm:
+                self.params['gamma%d'%(i+1)] = np.ones(hd)
+                self.params['beta%d'%(i+1)] = np.zeros(hd)
+            prev_layer_dim = next_layer_dim
+        self.params['W%d'%(self.num_layers)] = weight_scale * np.random.randn(prev_layer_dim, num_classes)
+        self.params['b%d'%(self.num_layers)] = weight_scale * np.zeros(num_classes)
+            
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -239,7 +250,21 @@ class FullyConnectedNet(object):
         # self.bn_params[1] to the forward pass for the second batch normalization #
         # layer, etc.                                                              #
         ############################################################################
-        pass
+        
+        layer_input = X
+        layer_cache = {}
+        dp_cache = {}
+        for layer in range(self.num_layers-1):
+            if self.use_batchnorm:
+                pass
+            else:
+                layer_input, layer_cache[layer] = affine_relu_forward(layer_input,self.params['W%d'%(layer+1)], self.params['b%d'%(layer+1)])
+        
+        if self.use_dropout:
+            pass
+        
+        last_layer_out, layer_cache[self.num_layers] = affine_forward(layer_input, self.params['W%d'%(self.num_layers)], self.params['b%d'%(self.num_layers)])
+        scores = last_layer_out
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
