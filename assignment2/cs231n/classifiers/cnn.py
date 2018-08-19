@@ -53,7 +53,14 @@ class ThreeLayerConvNet(object):
         # **the width and height of the input are preserved**. Take a look at      #
         # the start of the loss() function to see how that happens.                #                           
         ############################################################################
-        pass
+        C, H, W = input_dim
+        self.params['W1'] = weight_scale * np.random.randn(num_filters, C, filter_size, filter_size)
+        self.params['b1'] = np.zeros(num_filters)
+        self.params['W2'] = weight_scale * np.random.randn((H / 2)*(W / 2)*num_filters, hidden_dim)
+        self.params['b2'] = np.zeros(hidden_dim)
+        self.params['W3'] = weight_scale * np.random.randn(hidden_dim, num_classes)
+        self.params['b3'] = np.zeros(num_classes)
+        #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -89,7 +96,11 @@ class ThreeLayerConvNet(object):
         # Remember you can use the functions defined in cs231n/fast_layers.py and  #
         # cs231n/layer_utils.py in your implementation (already imported).         #
         ############################################################################
-        pass
+        conv_forward_out_1, cache_forward_1 = conv_relu_pool_forward(X, self.params['W1'], self.params['b1'], conv_param, pool_param)
+        affine_forward_out_2, cache_forward_2 = affine_forward(conv_forward_out_1, self.params['W2'], self.params['b2'])
+        affine_relu_2, cache_relu_2 = relu_forward(affine_forward_out_2)
+        scores, cache_forward_3 = affine_forward(affine_relu_2, self.params['W3'], self.params['b3'])
+        #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
